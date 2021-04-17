@@ -11,10 +11,15 @@ import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("2_data.csv")
 
-df.columns = ['x','y','z']
 
-corrMatrix = df.corr()
+dataFilePath = "2-covarience/data.csv"
+
+dataDF = pd.read_csv(dataFilePath, names=['x', 'y', 'z'], header=1)
+
+# Let Pandas do all the work...
+corrMatrix = dataDF.corr()
+
+# Plot the matrix as a heatmap using Seaborn
 sn.heatmap(corrMatrix, annot=True)
 plt.show()

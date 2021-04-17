@@ -9,6 +9,8 @@ i = 0
 with open('2_data.csv', 'w', newline='') as dataFile:
     writer = csv.writer(dataFile)
 
+    writer.writerow(['X', 'Y', 'Z'])
+
     while i < 1000:
         while serialConnection.in_waiting > 0:
 
