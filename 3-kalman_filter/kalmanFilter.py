@@ -18,8 +18,8 @@ resultsFilePath = "3-kalman_filter/results.csv"
 # Get the simulated data from the csv file as a pandas dataframe
 dataDF = pd.read_csv(dataFilePath, names=['gyro_roll', 'gyro_pitch', 'gyro_yaw', 'accel_x', 'accel_y', 'accel_z'], header=0)
 
-T = 0.01
-g = 9.81 # Grafity
+T = 0.01 # 100Hz
+g = 9.81 # Gravity
 
 X = [np.matrix([[1], [0], [0], [0]])] # State estimation of the Kalman filter, as a list of matrixes, with inital values
 
@@ -104,9 +104,10 @@ for k in range(len(dataDF)):
     yaw_arr = np.append(yaw_arr, yaw)
 
 
-dataDF['roll'] = roll_arr
-dataDF['pitch'] = pitch_arr
-dataDF['yaw'] = yaw_arr
+# Convert to degrees
+dataDF['roll'] = (180/np.pi) * roll_arr
+dataDF['pitch'] = (180/np.pi) * pitch_arr
+dataDF['yaw'] = (180/np.pi) * yaw_arr
 
 
 fig, axs = plt.subplots(2, 2)
