@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 
 
 dataFilePath = "3-kalman_filter/data.csv"
-resultsFilePath = "3-kalman_filter/results.csv"
 
 # Get the simulated data from the csv file as a pandas dataframe
 dataDF = pd.read_csv(dataFilePath, names=['gyro_roll', 'gyro_pitch', 'gyro_yaw', 'accel_x', 'accel_y', 'accel_z'], header=0)
@@ -27,8 +26,6 @@ Q = 0.0001 * np.identity(4) # Create a 4x4 idendity matrix, with 0.0001 as it's 
 P = np.identity(4) # Create a 4x4 idendity matrix
 H = np.identity(4) # Create a 4x4 idendity matrix
 R = 10 * np.identity(4)  # Create a 4x4 idendity matrix, with 10 as it's values
-
-q0 = np.matrix([1,0,0,0])
 
 Pk = np.zeros((4, 4)) # Inital Estimation error covariance, 4x4 matrix of zero's
 
@@ -50,7 +47,12 @@ for k in range(len(dataDF)):
     q = dataDF.gyro_pitch.at[k]
     r = dataDF.gyro_yaw.at[k]
 
-    # Calculate matrix A
+    # Measured accelerations
+    accelX = dataDF.accel_x.at[k]
+    accelY = dataDF.accel_y.at[k]
+    accelZ = dataDF.accel_z.at[k]
+
+    # Calculate matrix A, from the angular velocities
     A = H + (T / 2) * np.matrix([
                                     [0, -p, -q, -r],
                                     [p,  0,  r, -q],
@@ -58,16 +60,12 @@ for k in range(len(dataDF)):
                                     [r,  q, -p,  0]
                                 ])
 
-    # Measured accelerations
-    accelX = dataDF.accel_x.at[k]
-    accelY = dataDF.accel_y.at[k]
-    accelZ = dataDF.accel_z.at[k]
-
+    # Calculate pitch/roll/yaw, from the accelerations
     O = np.arcsin(accelX / g)                      # Calculate pitch
     Pi = np.arcsin(-(accelY) / (g  * (np.cos(O)))) # Calculate roll
     W = 0                                          # Yaw is always 0
 
-     # Calculate the quaturnions
+    # Calculate the quaturnion, from the pitch/roll/yaw
     quat = np.matrix([
         [(np.cos(Pi/2) * np.cos(O/2) * np.cos(W/2)) + (np.sin(Pi/2) * np.sin(O/2) * np.sin(W/2))],
         [(np.sin(Pi/2) * np.cos(O/2) * np.cos(W/2)) - (np.cos(Pi/2) * np.sin(O/2) * np.sin(W/2))],
@@ -84,6 +82,7 @@ for k in range(len(dataDF)):
 
     Pkplus1 = Pk - K * H * Pk # Estimation error covariance
 
+    # Save the ouput for the next loop cycle
     X.append(XkPlus1)
     Pk = Pkplus1
 
@@ -99,17 +98,18 @@ for k in range(len(dataDF)):
     pitch = np.arcsin(2 * (q0 * q2 - q3 * q1))
     yaw = np.arctan2((2 * (q0 * q3 + q1 * q2)), (1 - 2*(q2**2 + q3**2)))
     
+    # Save in output lists
     roll_arr = np.append(roll_arr, roll)
     pitch_arr = np.append(pitch_arr, pitch)
     yaw_arr = np.append(yaw_arr, yaw)
 
 
-# Convert to degrees
+# Convert results to degrees
 dataDF['roll'] = (180/np.pi) * roll_arr
 dataDF['pitch'] = (180/np.pi) * pitch_arr
 dataDF['yaw'] = (180/np.pi) * yaw_arr
 
-
+# Plot the results
 fig, axs = plt.subplots(2, 2)
 dataDF['roll'].plot(ax=axs[0,0], title="Roll", legend=True)
 dataDF['pitch'].plot(ax=axs[0,1], title="Pitch", legend=True)
