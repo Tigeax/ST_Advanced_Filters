@@ -51,7 +51,7 @@ dftShiftedLowpass[(abs(freqs) > lowpassFilterFreq)] = 0
 # Inverse shift the shifted DFT
 dftLowpass = np.fft.ifftshift(dftShiftedLowpass)
 
-# Get the inverse of the DFT to get our filtered sigal
+# Get the inverse of the DFT to get our filtered signal
 signalFiltered = np.fft.ifft(dftLowpass)
 
 # Get the DFT's magnitude's (abs() on a complex number returns it's magnitude)
