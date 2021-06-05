@@ -21,7 +21,7 @@ def cov(x, y):
     ''' Calculate the covariance between x and y, where x and y are both a list of numbers '''
 
     xMean, yMean = x.mean(), y.mean()
-    cov = np.sum((x - xMean) * (y - yMean)) / (len(x) - 1)
+    cov = np.sum((x - xMean) * (y - yMean)) / len(x)
     return cov
 
 # Create the covariance matrix based on the size of the data, using the cov function
