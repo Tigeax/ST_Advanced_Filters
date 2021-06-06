@@ -23,7 +23,6 @@ g = 9.81 # Gravity
 X = [np.matrix([[1], [0], [0], [0]])] # State estimation of the Kalman filter, as a list of matrixes, with inital values
 
 Q = 0.0001 * np.identity(4) # Create a 4x4 idendity matrix, with 0.0001 as it's values
-P = np.identity(4) # Create a 4x4 idendity matrix
 H = np.identity(4) # Create a 4x4 idendity matrix
 R = 10 * np.identity(4)  # Create a 4x4 idendity matrix, with 10 as it's values
 
