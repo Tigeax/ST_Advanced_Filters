@@ -1,17 +1,18 @@
-import serial
+import serial, time
 import numpy as np
 import matplotlib.pyplot as plt
 
 serialPort = 'COM5'
 
-T = 0.1 # 10Hz
+T = 0.01 # 100Hz
 g = 9.81 # Gravity
 
 
 def collectData(serialConnection):
 
-    readData = serialConnection.readline()[:-2].decode()
+    readData = serialConnection.readline().decode()[:-2]
     splitData = readData.split(';')
+    serialConnection.flush()
 
     accX = float(splitData[0])
     accY = float(splitData[1])
@@ -24,7 +25,7 @@ def collectData(serialConnection):
 
 
 Q = 0.0001 * np.identity(4) # Create a 4x4 idendity matrix, with 0.0001 as it's values
-H = np.identity(4) # Create a 4x4 idendity matrix
+H = np.identity(4)  # Create a 4x4 idendity matrix
 R = 10 * np.identity(4)  # Create a 4x4 idendity matrix, with 10 as it's values
 
 
@@ -87,39 +88,55 @@ def toEulerAngles(X):
 
 if __name__ == "__main__":
 
-    serialConnection = serial.Serial(serialPort, 115200, timeout=.1)
+    serialConnection = serial.Serial(serialPort, 115200, timeout=1.0)
 
     X = np.matrix([[1], [0], [0], [0]]) # Current state of the Kalman filter
     P = np.zeros((4, 4)) # Inital Estimation error covariance, 4x4 matrix of zero's
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    fig.show()
+    fig, axs = plt.subplots(3)
+
+    axs[0].set_title('Roll')
+    axs[1].set_title('Pitch')
+    axs[2].set_title('Yaw')
 
     rollList = []
+    pitchList = []
+    yawList = []
 
     i = 0
 
-    try:
-        while True:
-            while serialConnection.in_waiting > 0:
+    while True:
+        while serialConnection.in_waiting > 0:
+
+            try:
                 accX, accY, accZ, gyroX, gyroY, gyroZ = collectData(serialConnection)
-                X, P = kalmanFilter(X, P, accX, accY, accZ, gyroX, gyroY, gyroZ)
-                roll, pitch, yaw = toEulerAngles(X)
+            except Exception as e:
+                print(e)
+                continue
 
-                print((180/np.pi) * roll, (180/np.pi) * pitch, (180/np.pi) * yaw)
+            X, P = kalmanFilter(X, P, accX, accY, accZ, gyroX, gyroY, gyroZ)
 
-                rollList.append((180/np.pi) * roll)
+            roll, pitch, yaw = toEulerAngles(X)
 
-                ax.plot(rollList, color='b')
-                ax.set_xlim(left=max(0, i-50), right=i+50)
-                fig.canvas.draw()
+            roll, pitch, yaw = (180/np.pi) * roll, (180/np.pi) * pitch, (180/np.pi) * yaw
 
-                plt.pause(0.01)
+            rollList.append(roll)
+            pitchList.append(pitch)
+            yawList.append(yaw)
 
-                i = i +1
+            i = i + 1
 
 
-    except KeyboardInterrupt:
-        print ("Keyboard Interrupt, stopping program...")
+        axs[0].plot(rollList, color='b')
+        axs[1].plot(pitchList, color='b')
+        axs[2].plot(yawList, color='b')
+
+        axs[0].set_xlim(left=max(0, i-950), right=i+20)
+        axs[1].set_xlim(left=max(0, i-950), right=i+20)
+        axs[2].set_xlim(left=max(0, i-950), right=i+20)
+
+        fig.canvas.draw()
+
+        plt.pause(0.01)
+
         

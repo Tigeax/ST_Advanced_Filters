@@ -18,9 +18,9 @@ void setup() {
 
 void loop() {
     M5.IMU.getAccelData(&accX, &accY, &accZ);
-    M5.IMU.getGyroData(&gyroX,&gyroY,&gyroZ);
+    M5.IMU.getGyroData(&gyroX, &gyroY, &gyroZ);
 
-    Serial.printf("%5.2f;%5.2f;%5.2f;%5.2f;%5.2f;%5.2f\r\n", accX, accY, accZ, gyroX, gyroY, gyroZ);
+    Serial.printf("%5.3f;%5.3f;%5.3f;%5.3f;%5.3f;%5.3f\n", accX, accY, accZ, gyroX, gyroY, gyroZ);
 
-    delay(100);
+    delay(10);
 }
